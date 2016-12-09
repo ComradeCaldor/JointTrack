@@ -1,0 +1,3 @@
+/home/caldor/gazetrack/MyAruco/build/CMakeFiles/rebuild_cache.dir
+/home/caldor/gazetrack/MyAruco/build/CMakeFiles/edit_cache.dir
+/home/caldor/gazetrack/MyAruco/build/CMakeFiles/JointTracker.dir

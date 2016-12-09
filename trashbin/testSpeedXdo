@@ -1,0 +1,20 @@
+
+double tmpp = 0;
+char stext[100];
+while(tmpp < 0.9)
+{
+    gettimeofday(&tp, NULL);
+    ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+    if( ((double)ms - ms_prev) > 33)
+    {
+      tmpp += 0.005;
+      cout << tmpp*1800 << endl;
+      cout << "fps:" << ((double)ms - ms_prev) << endl;
+      //for(int i = 0; i < 2050; i++)
+        sprintf(stext, "xdotool mousemove %f 450 &",tmpp*1800);
+      ms_prev = ms;
+      int ret = system(stext);
+    }
+}
+
+dt= 10ms == 0.01s = 100 FPS
