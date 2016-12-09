@@ -19,3 +19,7 @@
 
     /home/caldor/gazetrack/aruco-1.2.4/utils/aruco_test.cpp
 
+git commit -m "test_commit"
+git remote add origin https://github.com/ComradeCaldor/JointTrack.git
+git push origin master --force
+git status

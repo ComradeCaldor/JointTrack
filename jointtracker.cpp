@@ -152,7 +152,7 @@ window, True, 0x0041, (XEvent *)&event);
   	int bVideowrite = 0;
     char arg[] = "../video/test_video.avi";
 
-    double t_button = 0;
+    double t_button = 0;  
     double t_death = 0.1;
     short untriggered = 1;
 
