@@ -60,6 +60,43 @@ CMAKE_SOURCE_DIR = /home/caldor/gazetrack/MyAruco
 CMAKE_BINARY_DIR = /home/caldor/gazetrack/MyAruco/build
 
 #=============================================================================
+# Target rules for target CMakeFiles/TestSpeed.dir
+
+# All Build rule for target.
+CMakeFiles/TestSpeed.dir/all:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/depend
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/caldor/gazetrack/MyAruco/build/CMakeFiles --progress-num=3,4 "Built target TestSpeed"
+.PHONY : CMakeFiles/TestSpeed.dir/all
+
+# Include target in all.
+all: CMakeFiles/TestSpeed.dir/all
+
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/TestSpeed.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/caldor/gazetrack/MyAruco/build/CMakeFiles 2
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/TestSpeed.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/caldor/gazetrack/MyAruco/build/CMakeFiles 0
+.PHONY : CMakeFiles/TestSpeed.dir/rule
+
+# Convenience name for target.
+TestSpeed: CMakeFiles/TestSpeed.dir/rule
+
+.PHONY : TestSpeed
+
+# clean rule for target.
+CMakeFiles/TestSpeed.dir/clean:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/clean
+.PHONY : CMakeFiles/TestSpeed.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/TestSpeed.dir/clean
+
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/JointTracker.dir
 
 # All Build rule for target.

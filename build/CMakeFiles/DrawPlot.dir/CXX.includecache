@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/caldor/gazetrack/MyAruco/drawplot.cpp
+iostream
+-
+opencv2/opencv.hpp
+-
+highgui.h
+/home/caldor/gazetrack/MyAruco/highgui.h
+../OpenCV/cvplot/cvplot.h
+/home/caldor/gazetrack/OpenCV/cvplot/cvplot.h
+
+/home/caldor/gazetrack/OpenCV/cvplot/cvplot.h
+vector
+-
+opencv2/opencv.hpp
+-
+highgui.h
+/home/caldor/gazetrack/OpenCV/cvplot/highgui.h
+

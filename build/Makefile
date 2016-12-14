@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named TestSpeed
+
+# Build rule for target.
+TestSpeed: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 TestSpeed
+.PHONY : TestSpeed
+
+# fast build rule for target.
+TestSpeed/fast:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/build
+.PHONY : TestSpeed/fast
+
+#=============================================================================
 # Target rules for targets named JointTracker
 
 # Build rule for target.
@@ -150,6 +163,33 @@ jointtracker.cpp.s:
 	$(MAKE) -f CMakeFiles/JointTracker.dir/build.make CMakeFiles/JointTracker.dir/jointtracker.cpp.s
 .PHONY : jointtracker.cpp.s
 
+testspeed.o: testspeed.cpp.o
+
+.PHONY : testspeed.o
+
+# target to build an object file
+testspeed.cpp.o:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/testspeed.cpp.o
+.PHONY : testspeed.cpp.o
+
+testspeed.i: testspeed.cpp.i
+
+.PHONY : testspeed.i
+
+# target to preprocess a source file
+testspeed.cpp.i:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/testspeed.cpp.i
+.PHONY : testspeed.cpp.i
+
+testspeed.s: testspeed.cpp.s
+
+.PHONY : testspeed.s
+
+# target to generate assembly for a file
+testspeed.cpp.s:
+	$(MAKE) -f CMakeFiles/TestSpeed.dir/build.make CMakeFiles/TestSpeed.dir/testspeed.cpp.s
+.PHONY : testspeed.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -157,11 +197,15 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
+	@echo "... TestSpeed"
 	@echo "... edit_cache"
 	@echo "... JointTracker"
 	@echo "... jointtracker.o"
 	@echo "... jointtracker.i"
 	@echo "... jointtracker.s"
+	@echo "... testspeed.o"
+	@echo "... testspeed.i"
+	@echo "... testspeed.s"
 .PHONY : help
 
 
