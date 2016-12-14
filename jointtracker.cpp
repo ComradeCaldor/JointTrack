@@ -26,7 +26,12 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************************************************************************/
 #include "jointtracker.h"
+#include<thread> //Файл в котором определен класс thread 
+extern "C" {
+#include <xdo.h>
+};
 
+xdo_t* xdoMain;
 //void CvDrawingUtils::QBe1(cv::Mat &Image,Marker &m,const CameraParameters &CP);
 int bprint_angles = 0;
 int bprint_range = 0,
@@ -55,6 +60,11 @@ int id_marker1 = 384,
     id_marker2 = 490;*/
 /*int id_marker1 = 366,
     id_marker2 = 514;*/
+
+int disp_res_x = 1900,
+    disp_res_y = 800,
+    mouse_to_x = 0,
+    mouse_to_y = 0;
 
 int readArguments ( int argc,char **argv )
 {
@@ -162,6 +172,7 @@ window, True, 0x0041, (XEvent *)&event);
     long int ms, ms_prev;
 
     int ret = 0;
+    char ssystem[100];
 
     std::string shelp("\td: switch detection mode; 0-off 1-Rng 2-a0 3-a1 4-a2\n");
     shelp.append("\tf: adaptive mode on/off;\n");
@@ -181,6 +192,8 @@ window, True, 0x0041, (XEvent *)&event);
 
     try
     {
+        xdoMain = xdo_new(NULL);
+
         if (readArguments (argc,argv)==0) {
             return 0;
         }
@@ -240,17 +253,25 @@ cout << "CAMERA" << endl;
 
 //   double dWidth = cap.get(CV_CAP_PROP_FRAME_WIDTH); //get the width of frames of the video
 //   double dHeight = cap.get(CV_CAP_PROP_FRAME_HEIGHT); //get the height of frames of the video
+        int iNFrame = 0;
 
         while ( key!=27 && TheVideoCapturer.grab())
         {
+            iNFrame++;
+
+  
+            if(iNFrame%10 == 0)
+            {
+                  gettimeofday(&tp, NULL);
+                  ms_prev = ms;
+                  ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+           // if(bprint_time_detection == 1 && iNFrame%10 == 0) //cout << ((double)ms - ms_start)/1000 << endl;
+                    cout << "fps:" << 1000/((double)ms - ms_prev)*10 << endl;
+            }
+
+
             bM11 = 0;
             bM21 = 0;
-
-            gettimeofday(&tp, NULL);
-            ms_prev = ms;
-            ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-            if(bprint_time_detection == 1) //cout << ((double)ms - ms_start)/1000 << endl;
-                    cout << "fps:" << 1000/((double)ms - ms_prev) << endl;
 
             if(ms - ms_start < 3000)
             {
@@ -527,7 +548,7 @@ cout << "CAMERA" << endl;
                break;
               case 'o':
                 {
-                   system("xdotool keyup space");
+                   xdo_send_keysequence_window_up(xdoMain, CURRENTWINDOW, "space", 500);
                    bOutmode += 1;// slider_R[1] = 2;
                    if(bOutmode > 1)
                       bOutmode = 0; 
@@ -535,7 +556,7 @@ cout << "CAMERA" << endl;
                break;
               case 'v':
                 {
-                    system("xdotool keyup space");
+                    xdo_send_keysequence_window_up(xdoMain, CURRENTWINDOW, "space", 500);
                     bMovemode += 1;
                     if(bMovemode == 3)
                         bMovemode = 0;
@@ -867,7 +888,8 @@ cout << "line1:" << line1 << endl;*/
                       //                       int ret = system("xset r off; echo "" && xdotool key --delay 2 space; xset r on;");
                       //                       int ret = system("xdotool search \"Mozilla Firefox\" windowactivate; xdotool --sync key --clearmodifiers  mousemove 800 400; xdotool click 1; xdotool key space");
                       //                        xdotool search "[Firefox Page Title]" windowactivate --sync key --clearmodifiers ctrl+r
-                                               ret = system("xdotool keydown space && sleep 0.02 & xdotool keyup space &");
+                                               //ret = system("xdotool keydown space && sleep 0.02 & xdotool keyup space &");
+                                               xdo_send_keysequence_window(xdoMain, CURRENTWINDOW, "space", 500);
                                                cout << "JUMP!!\n" << endl;
                                                bTrigd = 0;
 
@@ -878,9 +900,9 @@ cout << "line1:" << line1 << endl;*/
                                       }
                                       else 
                                         if(bMovemode == 1 && (bTrigd == 1 || bBeyond == 1) )
-                                             ret = system("xdotool keydown space &");
+                                              xdo_send_keysequence_window_down(xdoMain, CURRENTWINDOW, "space", 500);
                                           else
-                                              ;//ret = system("xdotool keyup space &"); //!!!!PELIGRO!!!!Takes ~3 fps.
+                                               xdo_send_keysequence_window_down(xdoMain, CURRENTWINDOW, "space", 500);
                                 }
       //                          else
       //                              cv::putText(pic, "red", cvPoint(10,35), FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0,0,255), 1, CV_AA);
@@ -888,22 +910,33 @@ cout << "line1:" << line1 << endl;*/
                            break;
                           case 1: // mouse
                             {
-                              char ssystem[100];
+                              mouse_to_x = disp_res_x / 2;
+                              mouse_to_y = disp_res_y / 2;
 
                               if(bMovemode == 0)                                                  //x
-                                    sprintf(ssystem, "xdotool mousemove %f 450 &",Percent*1800);
-                              if(bMovemode == 1)                                                  //y
-                                    sprintf(ssystem, "xdotool mousemove 800 %f &",Percent*900);
-                              if(bMovemode == 2)                                                  //x+y
-                                    sprintf(ssystem, "xdotool mousemove %f %f &",AnglePerc[2]*900, AnglePerc[1]*1800);
+                                    mouse_to_x = Percent*1800;
+                                else if(bMovemode == 1)                                                  //y
+                                    mouse_to_y =Percent*900;
+                                else if(bMovemode == 2)                                                  //x+y
+                                {
+                                    mouse_to_x = Percent*1800;
+                                    mouse_to_y =Percent*900;
+                                }
 
                               if (bDetectMode != 0 && bM11 && bM21)
-                                  ret = system(ssystem);
+                                  {
+                                      xdo_move_mouse(xdoMain,mouse_to_x,mouse_to_y,0);
+                                  }
                               //int ret = system("xdotool mousemove 800 400; xdotool click 1; xdotool key space");    
                             }
                               break;
                         }
             }
+
+
+            //show input with augmented information and  the thresholded image
+            cv::imshow("in",TheInputImageCopy);
+            cv::imshow("thres",MDetector.getThresholdedImage());
 
             char text_Mode[4];
             sprintf(text_Mode,"M:%d",bMovemode);
@@ -913,7 +946,6 @@ cout << "line1:" << line1 << endl;*/
             sprintf(text_Mode,"A:%d",bAdaptive);
             cv::putText(pic, text_Mode, cvPoint(10,75), FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(255,255,255), 1, CV_AA);
             imshow("options", pic);
-
 
             if(bVideowrite == 1)
              video.write(TheInputImageCopy);
