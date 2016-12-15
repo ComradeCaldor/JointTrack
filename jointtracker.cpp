@@ -92,32 +92,7 @@ int readArguments ( int argc,char **argv )
 
 int main(int argc,char **argv)
 {
-/*
-  // Display *display;
- //  unsigned int keycode;
-//   display = XOpenDisplay(NULL);
-//   keycode = XKeysymToKeycode(display, XK_A);
-
-   // Obtain the X11 display.
-   Display *display = XOpenDisplay(0);
-   if(display == NULL)
-        return -1;
-
-   // Get the root window for the current display.
-   Window winRoot = XDefaultRootWindow(display);
-
-   // Find the window which has the current keyboard focus.
-   Window winFocus;
-   int    revert;
-   XGetInputFocus(display, &winFocus, &revert); 
-
-    // Send a fake key press event to the window.
-  // XKeyEvent event = createKeyEvent(display, winFocus, winRoot, true, 0x0041, 0);
-   //XSendEvent(event.display, event.
-window, True, 0x0041, (XEvent *)&event);
- 
-*/
-    int icamera = 0;                          // LoadCamera /dev/video0-1-2-3
+    int icamera = 1;                          // LoadCamera /dev/video0-1-2-3
     int bDetectMode = 2;                      // 0-off 1-Rng 2-a0 3-a1 4-a2
     int slider_R[4] = {5154,4726,4478,6537  };  // thresholds for activation
 
@@ -205,7 +180,7 @@ cout << "CAMERA" << endl;
             TheVideoCapturer.open(icamera);
 //            TheVideoCapturer.set(15,0);
             TheVideoCapturer.set(5,1);
-            waitTime=10;
+            waitTime=1;
         }
         else  TheVideoCapturer.open(TheInputVideo);
         //check video is open
@@ -247,7 +222,7 @@ cout << "CAMERA" << endl;
         createTrackbar("R2","options",&slider_R[2],10000);
         createTrackbar("R","options",&slider_R[3],10000);
 
-        int ret = system("v4l2-ctl -d /dev/video0 --set-ctrl power_line_frequency=2  --set-ctrl exposure_auto=1 --set-ctrl exposure_absolute=10;");
+        int ret = system("v4l2-ctl -d /dev/video1 --set-ctrl power_line_frequency=2  --set-ctrl exposure_auto=1 --set-ctrl exposure_absolute=10;");
 
         VideoWriter video(arg,CV_FOURCC('M','J','P','G'),30, Size(640,480),true);
 
@@ -500,10 +475,6 @@ cout << "CAMERA" << endl;
                 //------^^^^^^^Add cube and draw^^^^^--------------------
             }//if(bM11 && bM21)
 
-            //show input with augmented information and  the thresholded image
-            cv::imshow("in",TheInputImageCopy);
-            cv::imshow("thres",MDetector.getThresholdedImage());
-
             switch (key)
             {
               case 'd':
@@ -543,7 +514,7 @@ cout << "CAMERA" << endl;
                break;
               case 'e':
                 {
-                    int ret = system("v4l2-ctl -d /dev/video0 --set-ctrl power_line_frequency=2  --set-ctrl exposure_auto=1 --set-ctrl exposure_absolute=10;");
+                    int ret = system("v4l2-ctl -d /dev/video1 --set-ctrl power_line_frequency=2  --set-ctrl exposure_auto=1 --set-ctrl exposure_absolute=10;");
                 }
                break;
               case 'o':
@@ -935,8 +906,8 @@ cout << "line1:" << line1 << endl;*/
 
 
             //show input with augmented information and  the thresholded image
-            cv::imshow("in",TheInputImageCopy);
-            cv::imshow("thres",MDetector.getThresholdedImage());
+             cv::imshow("in",TheInputImageCopy);
+             cv::imshow("thres",MDetector.getThresholdedImage());
 
             char text_Mode[4];
             sprintf(text_Mode,"M:%d",bMovemode);
@@ -948,7 +919,7 @@ cout << "line1:" << line1 << endl;*/
             imshow("options", pic);
 
             if(bVideowrite == 1)
-             video.write(TheInputImageCopy);
+             video.write(TheInputImage);
 
             key=cv::waitKey(waitTime);//wait for key to be pressed
             //--------------/Draw bins-----------------
@@ -991,6 +962,6 @@ void cvTackBarEvents(int pos,void*)
         for (unsigned int i=0; i<TheMarkers.size(); i++)
             CvDrawingUtils::draw3dCube(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
 
-    cv::imshow("in",TheInputImageCopy);
-    cv::imshow("thres",MDetector.getThresholdedImage());
+  //  cv::imshow("in",TheInputImageCopy);
+  //  cv::imshow("thres",MDetector.getThresholdedImage());
 }
