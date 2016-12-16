@@ -54,8 +54,10 @@ double ThresParam1,ThresParam2;
 int iThresParam1,iThresParam2;
 int waitTime=0;
 
-int id_marker1 = 384,
-    id_marker2 = 728;
+/*int id_marker1 = 384,
+    id_marker2 = 728;*/
+int id_marker1 = 777, // 50mm
+    id_marker2 = 555;
 /*int id_marker1 = 60,
     id_marker2 = 490;*/
 /*int id_marker1 = 366,
@@ -131,7 +133,7 @@ int main(int argc,char **argv)
     int bFirst = 1;
     int bBeyond = 0;    // pos > threshold 
     int bTrigd = 0;
-    int bAdaptive = 1;
+    int bAdaptive = 6;
     int bOutmode = 0;
     int bMovemode = 0;
   	int bVideowrite = 0;
@@ -425,53 +427,8 @@ cout << "CAMERA" << endl;
 //cout << "Diff: " << (euler2[1] - Angle_aver[1]) << endl;
 
                 //-----------Add cube and draw-----------------------
-                Mat objectPoints (8,3,CV_32FC1);
-                double halfSize=TheMarkers[0].ssize/2;
-                double cubeSize=TheMarkers[0].ssize;
-
-                objectPoints.at<float>(0,0)=-halfSize; 	//x
-                objectPoints.at<float>(0,1)=0;		      //y
-                objectPoints.at<float>(0,2)=-halfSize;	//z
-                objectPoints.at<float>(1,0)=halfSize;		//x
-                objectPoints.at<float>(1,1)=0;		    	//y
-                objectPoints.at<float>(1,2)=-halfSize;	//z
-                objectPoints.at<float>(2,0)=halfSize;	  //x
-                objectPoints.at<float>(2,1)=0;		      //y
-                objectPoints.at<float>(2,2)=halfSize;	  //z
-                objectPoints.at<float>(3,0)=-halfSize;	//x
-                objectPoints.at<float>(3,1)=0;			    //y
-                objectPoints.at<float>(3,2)=halfSize;		//z
-
-                objectPoints.at<float>(4,0)=-halfSize;	//x
-                objectPoints.at<float>(4,1)=cubeSize;	  //y
-                objectPoints.at<float>(4,2)=-halfSize;	//z
-                objectPoints.at<float>(5,0)=halfSize;		//x
-                objectPoints.at<float>(5,1)=cubeSize;		//y
-                objectPoints.at<float>(5,2)=-halfSize;	//z
-                objectPoints.at<float>(6,0)=halfSize;	  //x
-                objectPoints.at<float>(6,1)=cubeSize; 	//y
-                objectPoints.at<float>(6,2)=halfSize;	  //z
-                objectPoints.at<float>(7,0)=-halfSize;	//x
-                objectPoints.at<float>(7,1)=cubeSize;		//y
-                objectPoints.at<float>(7,2)=halfSize;		//z
-
-                TheMarkers[0].Tvec.ptr<float>(0)[0] = 0;//NowTvec[60][0];  //  y
-                TheMarkers[0].Tvec.ptr<float>(0)[1] = 0;//NowTvec[60][1];  //  |
-                TheMarkers[0].Tvec.ptr<float>(0)[2] = Range + 11;          //  z---x
-
-                TheMarkers[0].Rvec.ptr<float>(0)[0] = euler2[0];//NowRvec[460][0];
-                TheMarkers[0].Rvec.ptr<float>(0)[1] = euler2[1];//NowRvec[460][1];
-                TheMarkers[0].Rvec.ptr<float>(0)[2] = euler2[2];//NowRvec[460][2];
-
-                vector<Point2f> imagePoints;
-                projectPoints( objectPoints, TheMarkers[0].Rvec, TheMarkers[0].Tvec,  TheCameraParameters.CameraMatrix,TheCameraParameters.Distorsion,   imagePoints);
-
-                for (int i=0; i<4; i++)
-                    cv::line(TheInputImageCopy,imagePoints[i],imagePoints[(i+1)%4],Scalar(0,0,255,255),1,CV_AA);
-                for (int i=0; i<4; i++)
-                    cv::line(TheInputImageCopy,imagePoints[i+4],imagePoints[4+(i+1)%4],Scalar(0,255,0,255),1,CV_AA);
-                for (int i=0; i<4; i++)
-                    cv::line(TheInputImageCopy,imagePoints[i],imagePoints[i+4],Scalar(255,0,0,255),1,CV_AA);
+                DrawCube2(TheInputImageCopy, TheMarkers, TheCameraParameters, Range, euler2);
+  
                 //------^^^^^^^Add cube and draw^^^^^--------------------
             }//if(bM11 && bM21)
 
@@ -523,6 +480,7 @@ cout << "CAMERA" << endl;
                    bOutmode += 1;// slider_R[1] = 2;
                    if(bOutmode > 1)
                       bOutmode = 0; 
+                   bMovemode = 0;
                 }
                break;
               case 'v':
@@ -562,92 +520,20 @@ cout << "CAMERA" << endl;
             //------------Draw bins-----------------------
             cv::rectangle(pic, cv::Point(0,0), cv::Point(250, 250), cv::Scalar(0,0,0), -1, CV_AA);
 
+            DrawBar( pic, 240, 250, Range, (double) Range_min, (double) Range_max, Range_aver, thresholdDelta[3] );
+
             double xmin, xmax;
             double line1 = 0, lineMax = 0, lineMin = 0, lineAver = 0, lineThresh = 0;
-            xmin = Range_min - (Range_max - Range_min)/3;
-            xmax = Range_max + (Range_max - Range_min)/3;
-            line1 = ((double)Range- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMax = ((double)Range_max- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMin = ((double)Range_min- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineAver = ((double)Range_aver- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineThresh = ((double)(Range_aver+thresholdDelta[3])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
+            int color[3] = { 255, 75, 75 };
 
-            bin_x1 = 240;
-            bin_x2 = 250;
+            DrawBar( pic, 135, 145, euler2[0], (double) Angle_xyz_min[0], (double) Angle_xyz_max[0], Angle_aver[0], thresholdDelta[0] );
+            DrawBar( pic, 150, 160, euler2[1], (double) Angle_xyz_min[1], (double) Angle_xyz_max[1], Angle_aver[1], thresholdDelta[1] );
+            DrawBar( pic, 165, 175, euler2[2], (double) Angle_xyz_min[2], (double) Angle_xyz_max[2], Angle_aver[2], thresholdDelta[2] );
 
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-    //        cv::rectangle(pic, cv::Point(bin_x1,70-2), cv::Point(bin_x2, 70+2), cv::Scalar(175,0,0), -1, CV_AA);                  //line
-      //      cv::rectangle(pic, cv::Point(bin_x1,195-2), cv::Point(bin_x2, 195+2), cv::Scalar(175,0,0), -1, CV_AA);                //line
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMax), cv::Point(bin_x2, lineMax+4), cv::Scalar(75,0,0), -1, CV_AA);           // Min
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(75,0,0), -1, CV_AA);           // Max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);                // Now
-            cv::putText(pic, "R.", cvPoint(240,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
-            xmin = 2;
-            xmax = -3;
-
-            bin_x1 = 135;
-            bin_x2 = 145;
-            //xmin = 0;
-            //xmax = 0;
-            line1 = 0;
-            //xmin = Angle_xyz_min[2] - (Angle_xyz_max[2] - Angle_xyz_min[2])/3;
-            //xmax = Angle_xyz_max[2] + (Angle_xyz_max[2] - Angle_xyz_min[2])/3;
-            lineMax = ((double)Angle_xyz_max[0]- (double)xmin) * (250) / ((double)xmax - (double)xmin) ;
-            lineMin = ((double)Angle_xyz_min[0]- (double)xmin) * (250) / ((double)xmax - (double)xmin) ;
-            lineAver = ((double)Angle_aver[0]- (double)xmin) * (250) / ((double)xmax - (double)xmin) ;
-            lineThresh = ((double)(Angle_aver[0]+thresholdDelta[0])- (double)xmin) * (250) / ((double)xmax - (double)xmin) ;
-            line1 = ((double)euler2[0]- (double)xmin) * (250) / ((double)xmax - (double)xmin) ;
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);           // Столбец
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);      // Измеренное значение 
-            cv::putText(pic, "0", cvPoint(135,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
-            bin_x1 = 180;
-            bin_x2 = 190;
-            xmax = (double)Angle_aver[1]+2*(double)thresholdDelta[1];
-            xmin = (double)Angle_aver[1]-2*(double)thresholdDelta[1];
-            if (lineThresh > line1)
-            {
-                xmin = line1;
-                xmax = lineThresh;
-            }
-            lineMax = ((double)Angle_xyz_max[0]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMin = ((double)Angle_xyz_min[0]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineAver = ((double)Angle_aver[0]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineThresh = ((double)(Angle_aver[0]+thresholdDelta[0])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            line1 = ((double)euler2[0]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);           // Столбец
-            cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min//---------------------------------------------------------------ZOOM
-            cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);      // Измеренное значение 
-            cv::putText(pic, "0", cvPoint(135,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
-            xmin = 3;
-            xmax = -3;
-            bin_x1 = 150;
-            bin_x2 = 160;
-            line1 = 0;
-            lineMax = ((double)Angle_xyz_max[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMin = ((double)Angle_xyz_min[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineAver = ((double)Angle_aver[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineThresh = ((double)(Angle_aver[1]+thresholdDelta[1])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            line1 = ((double)euler2[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);    // Измеренное значение 
-            cv::putText(pic, "1", cvPoint(150,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
+            DrawBar_2( pic, 180, 190, euler2[0], (double) Angle_xyz_min[0], (double) Angle_xyz_max[0], Angle_aver[0], thresholdDelta[0], color );
+            DrawBar_2( pic, 195, 205, euler2[1], (double) Angle_xyz_min[1], (double) Angle_xyz_max[1], Angle_aver[1], thresholdDelta[1], color );
+            DrawBar_2( pic, 210, 215, euler2[2], (double) Angle_xyz_min[2], (double) Angle_xyz_max[2], Angle_aver[2], thresholdDelta[2], color );
+/*
             bin_x1 = 195;
             bin_x2 = 205;
             xmax = (double)Angle_aver[1]+2*(double)thresholdDelta[1];
@@ -657,95 +543,13 @@ cout << "CAMERA" << endl;
             lineAver = ((double)Angle_aver[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
             lineThresh = ((double)(Angle_aver[1]+thresholdDelta[1])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
             line1 = ((double)euler2[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-/*cout << "xmax:" << xmax << endl;
-cout << "xmin:" << xmin << endl;
-cout << "euler2[1]:" << euler2[1] << endl;
-cout << "%:" << ((double)euler2[1]-(double)xmin) / ((double)xmax-(double)xmin) << endl;
-cout << "line1:" << line1 << endl;*/
+
             cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,100,100), -1, CV_AA);
-  //          cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min
-//            cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
             cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
             cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver//---------------------------------------------------------------ZOOM
             cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);    // Измеренное значение 
             cv::putText(pic, "1", cvPoint(150,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
-
-            xmin = 3;
-            xmax = -3;
-            bin_x1 = 165;
-            bin_x2 = 175;
-            line1 = 0;
-            lineMax = ((double)Angle_xyz_max[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMin = ((double)Angle_xyz_min[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineAver = ((double)Angle_aver[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineThresh = ((double)(Angle_aver[2]+thresholdDelta[2])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            line1 = ((double)euler2[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min
-           // cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);      // Измеренное значение 
-            cv::putText(pic, "2", cvPoint(165,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);
-
-/*            bin_x1 = 210;
-            bin_x2 = 220;
-            line1 = 0;
-            xmax = line1;
-            xmin = lineThresh;
-            lineMax = ((double)Angle_xyz_max[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineMin = ((double)Angle_xyz_min[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineAver = ((double)Angle_aver[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            lineThresh = ((double)(Angle_aver[2]+thresholdDelta[2])- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            line1 = ((double)euler2[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-            cv::rectangle(pic, cv::Point(bin_x1,lineMin), cv::Point(bin_x2, lineMin+4), cv::Scalar(175,0,0), -1, CV_AA);      // min
-            cv::rectangle(pic, cv::Point(bin_x1,lineMax-2), cv::Point(bin_x2, lineMax+2), cv::Scalar(175,0,0), -1, CV_AA);      // max
-            cv::rectangle(pic, cv::Point(bin_x1,lineThresh-2), cv::Point(bin_x2, lineThresh+2), cv::Scalar(0,75,0), -1, CV_AA);      // aver
-            cv::rectangle(pic, cv::Point(bin_x1,lineAver-2), cv::Point(bin_x2, lineAver+2), cv::Scalar(0,175,0), -1, CV_AA);      // aver//---------------------------------------------------------------ZOOM
-            cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);      // Измеренное значение 
-            cv::putText(pic, "2", cvPoint(165,15), FONT_HERSHEY_COMPLEX_SMALL, 0.5, cvScalar(255,255,255), 1, CV_AA);*/
-            /* 
-            	bin_x1 = 180;
-            	bin_x2 = 190;
-            	//xmin = 0;
-            	//xmax = 0;
-            	line1 = 0;
-            	//xmin = Angle_xyz_min[2] - (Angle_xyz_max[2] - Angle_xyz_min[2])/3;
-            	//xmax = Angle_xyz_max[2] + (Angle_xyz_max[2] - Angle_xyz_min[2])/3;
-            	line1 = ((double)dR[2]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            	cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,70-2), cv::Point(bin_x2, 70+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,195-2), cv::Point(bin_x2, 195+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);
-
-            	bin_x1 = 195;
-            	bin_x2 = 205;
-            	//xmin = 0;
-            	//xmax = 0;                                                                                           // Какая-то херня в абсолютных значениях.
-            	line1 = 0;
-            	//xmin = Angle_xyz_min[1] - (Angle_xyz_max[1] - Angle_xyz_min[1])/3;
-            	//xmax = Angle_xyz_max[1] + (Angle_xyz_max[1] - Angle_xyz_min[1])/3;
-            	line1 = ((double)dR[1]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            	cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,70-2), cv::Point(bin_x2, 70+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,195-2), cv::Point(bin_x2, 195+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);
-
-            	bin_x1 = 210;
-            	bin_x2 = 220;
-            	//xmin = 0;
-            	//xmax = 0;
-            	line1 = 0;
-            	//xmin = Angle_xyz_min[0] - (Angle_xyz_max[0] - Angle_xyz_min[0])/3;
-            	//xmax = Angle_xyz_max[0] + (Angle_xyz_max[0] - Angle_xyz_min[0])/3;
-            	line1 = ((double)dR[0]- (double)xmin) * (250-25) / ((double)xmax - (double)xmin) + 25;
-            	cv::rectangle(pic, cv::Point(bin_x1,25), cv::Point(bin_x2, 250), cv::Scalar(255,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,70-2), cv::Point(bin_x2, 70+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,195-2), cv::Point(bin_x2, 195+2), cv::Scalar(175,0,0), -1, CV_AA);
-            	cv::rectangle(pic, cv::Point(bin_x1,line1), cv::Point(bin_x2, line1+4), cv::Scalar(0,0,0), -1, CV_AA);
-            */
+*/
             if(bM11 && bM21)
             {
                 bTrigd = 0;
@@ -855,11 +659,6 @@ cout << "line1:" << line1 << endl;*/
                                       {
                                           if(bTrigd == 1)
                                           {
-                      //                       int ret = system("xdotool key space;"); //  echo \"Jump!\";  // xdotool key --delay 2 space;");
-                      //                       int ret = system("xset r off; echo "" && xdotool key --delay 2 space; xset r on;");
-                      //                       int ret = system("xdotool search \"Mozilla Firefox\" windowactivate; xdotool --sync key --clearmodifiers  mousemove 800 400; xdotool click 1; xdotool key space");
-                      //                        xdotool search "[Firefox Page Title]" windowactivate --sync key --clearmodifiers ctrl+r
-                                               //ret = system("xdotool keydown space && sleep 0.02 & xdotool keyup space &");
                                                xdo_send_keysequence_window(xdoMain, CURRENTWINDOW, "space", 500);
                                                cout << "JUMP!!\n" << endl;
                                                bTrigd = 0;
@@ -867,16 +666,14 @@ cout << "line1:" << line1 << endl;*/
                                                cv::putText(pic, "o", cvPoint(90,25), FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(100,255,100), 1, CV_AA);
                                           }
                                           else
-                                              ;//ret = system("xdotool keyup space &"); //!!!!PELIGRO!!!!Takes ~3 fps.
+                                              ;//xdo_send_keysequence_window_up(xdoMain, CURRENTWINDOW, "space", 500);
                                       }
                                       else 
                                         if(bMovemode == 1 && (bTrigd == 1 || bBeyond == 1) )
                                               xdo_send_keysequence_window_down(xdoMain, CURRENTWINDOW, "space", 500);
                                           else
-                                               xdo_send_keysequence_window_down(xdoMain, CURRENTWINDOW, "space", 500);
+                                               xdo_send_keysequence_window_up(xdoMain, CURRENTWINDOW, "space", 500);
                                 }
-      //                          else
-      //                              cv::putText(pic, "red", cvPoint(10,35), FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0,0,255), 1, CV_AA);
                             }
                            break;
                           case 1: // mouse
@@ -884,7 +681,7 @@ cout << "line1:" << line1 << endl;*/
                               mouse_to_x = disp_res_x / 2;
                               mouse_to_y = disp_res_y / 2;
 
-                              if(bMovemode == 0)                                                  //x
+                              if(bMovemode == 0)                                                         //x
                                     mouse_to_x = Percent*1800;
                                 else if(bMovemode == 1)                                                  //y
                                     mouse_to_y =Percent*900;
@@ -938,6 +735,7 @@ cout << "line1:" << line1 << endl;*/
  *
  *
  ************************************/
+
 
 void cvTackBarEvents(int pos,void*)
 {
