@@ -25,7 +25,7 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Rafael Muñoz Salinas.
 ********************************************************************************************/
-#include "jointtracker.h"
+#include "jointtracker.h" 
 #include<thread> //Файл в котором определен класс thread 
 extern "C" {
 #include <xdo.h>
